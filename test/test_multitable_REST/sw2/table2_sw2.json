@@ -1,0 +1,16 @@
+{
+    "_comment":"block tcp h2 to h3",
+    "dpid": 2,
+    "table_id": 2,
+    "idle_timeout": 0,
+    "hard_timeout": 0,
+    "priority": 100,
+    "match":{
+        "eth_type": 2048,
+        "ipv4_src": "10.0.0.2",
+        "ipv4_dst": "10.0.0.3",
+        "ip_proto": 6
+    },
+    "actions":[
+    ]
+}

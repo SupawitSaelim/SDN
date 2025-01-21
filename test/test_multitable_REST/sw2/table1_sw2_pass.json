@@ -1,0 +1,16 @@
+{
+    "_comment": "pass to table2",
+    "dpid": 2,
+    "table_id": 1,
+    "idle_timeout": 0,
+    "hard_timeout": 0,
+    "priority": 0,
+    "match":{
+    },
+    "actions":[
+        {
+            "type":"GOTO_TABLE",
+            "table_id": 2
+        }
+    ]
+}
