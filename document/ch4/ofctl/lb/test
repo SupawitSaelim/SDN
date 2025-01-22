@@ -1,9 +1,10 @@
 {
-    "dpid": 2,
-    "type": "ALL",
-    "group_id": 51,
+    "dpid": 1,
+    "type": "SELECT",
+    "group_id": 50,
     "buckets": [
         {
+            "weight": 50,
             "actions": [
                 {
                     "type": "OUTPUT",
@@ -12,6 +13,7 @@
             ]
         },
         {
+            "weight": 50,
              "actions": [
                 {
                     "type": "OUTPUT",
