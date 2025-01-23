@@ -1,13 +1,13 @@
 {
     "dpid": 2,
     "type": "ALL",
-    "group_id": 50,
+    "group_id": 12,
     "buckets": [
         {
             "actions": [
                 {
                     "type": "OUTPUT",
-                    "port": 1
+                    "port": 2
                 }
             ]
         },
@@ -15,9 +15,17 @@
              "actions": [
                 {
                     "type": "OUTPUT",
-                    "port": 2
+                    "port": 3
                 }
             ]
-        }
+        },
+        {
+            "actions": [
+               {
+                   "type": "OUTPUT",
+                   "port": 1
+               }
+           ]
+       }
     ]
 }

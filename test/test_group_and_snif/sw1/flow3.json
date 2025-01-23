@@ -1,11 +1,11 @@
 {
-    "dpid": 3,
+    "dpid": 1,
     "table_id": 0,
     "idle_timeout": 0,
     "hard_timeout": 0,
-    "priority": 0,
+    "priority": 100,
     "match":{
-        "dl_dst":"00:00:00:00:00:02"
+        "in_port":3
     },
     "actions":[
         {

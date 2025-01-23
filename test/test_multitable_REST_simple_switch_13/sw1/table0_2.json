@@ -1,0 +1,17 @@
+{
+    "dpid": 1,
+    "table_id": 0,
+    "idle_timeout": 0,
+    "hard_timeout": 0,
+    "priority": 50,
+    "match":{
+        "eth_type": 2048,
+        "ip_proto": 6
+    },
+    "actions":[
+        {
+            "type":"GOTO_TABLE",
+            "table_id": 1
+        }
+    ]
+}

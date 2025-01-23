@@ -1,16 +1,16 @@
 {
-    "_comment": "GO to table2",
     "dpid": 3,
-    "table_id": 1,
+    "table_id": 0,
     "idle_timeout": 0,
     "hard_timeout": 0,
     "priority": 0,
     "match":{
+        "dl_dst":"00:00:00:00:00:04"
     },
     "actions":[
         {
-            "type": "GOTO_TABLE",
-            "table_id": 2
+            "type":"OUTPUT",
+            "port": 3
         }
     ]
 }

@@ -1,0 +1,14 @@
+{
+    "dpid": 2,
+    "table_id": 0,
+    "priority": 100,
+    "match":{
+        "in_port":1
+    },
+    "actions":[
+        {
+            "type":"GROUP",
+            "group_id": 12
+        }
+    ]
+}

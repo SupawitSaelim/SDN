@@ -5,12 +5,12 @@
     "hard_timeout": 0,
     "priority": 0,
     "match":{
-        "dl_dst":"00:00:00:00:00:02"
+        "eth_type": 2054
     },
     "actions":[
         {
             "type":"OUTPUT",
-            "port": 1
+            "port": "FLOOD"
         }
     ]
 }

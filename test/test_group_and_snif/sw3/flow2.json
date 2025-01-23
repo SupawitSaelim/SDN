@@ -1,15 +1,15 @@
 {
-    "_comment": "Default_route",
     "dpid": 3,
-    "table_id": 3,
+    "table_id": 0,
     "idle_timeout": 0,
     "hard_timeout": 0,
-    "priority": 0,
+    "priority": 100,
     "match":{
+        "in_port":2
     },
     "actions":[
         {
-            "type": "OUTPUT",
+            "type":"OUTPUT",
             "port": 1
         }
     ]
