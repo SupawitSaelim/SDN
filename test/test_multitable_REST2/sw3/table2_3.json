@@ -1,0 +1,18 @@
+{
+    "_comment": "allow ICMP",
+    "dpid": 3,
+    "table_id": 2,
+    "idle_timeout": 0,
+    "hard_timeout": 0,
+    "priority": 50,
+    "match":{
+        "eth_type": 2048,
+        "ip_proto": 1
+    },
+    "actions":[
+        {
+            "type": "GOTO_TABLE",
+            "table_id": 3
+        }
+    ]
+}
