@@ -1,0 +1,15 @@
+{
+  "network-topology:termination-point": [
+    {
+      "ovsdb:name": "patch1",
+      "tp-id": "patch1",
+      "ovsdb:interface-type": "ovsdb:interface-type-patch",
+      "ovsdb:options": [
+        {
+          "ovsdb:option": "peer",
+          "ovsdb:value" : "veth0"
+        }      
+        ]
+    }
+  ]
+}

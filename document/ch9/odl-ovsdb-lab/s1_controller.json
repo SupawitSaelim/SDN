@@ -1,0 +1,19 @@
+{
+  "network-topology:node": [
+    {
+      "node-id": "ovsdb:HOST1/bridge/s1",
+      "ovsdb:bridge-name": "s1",
+      "ovsdb:controller-entry": [
+                {
+                  "target": "tcp:127.0.0.1:6653"
+                }
+              ],      
+      "ovsdb:protocol-entry": [
+        {
+          "protocol": "ovsdb:ovsdb-bridge-protocol-openflow-13"
+        }
+      ],
+      "ovsdb:managed-by": "/network-topology:network-topology/network-topology:topology[network-topology:topology-id='ovsdb:1']/network-topology:node[network-topology:node-id='ovsdb:HOST1']"
+    }
+  ]
+}

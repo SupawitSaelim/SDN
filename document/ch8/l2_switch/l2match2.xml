@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flow xmlns="urn:opendaylight:flow:inventory">
+    <hard-timeout>0</hard-timeout>
+    <idle-timeout>0</idle-timeout>
+    <cookie>1</cookie>
+    <priority>100</priority>
+    <flow-name>flow1</flow-name>
+    <match>
+        <ethernet-match>
+            <ethernet-source>
+                <address>00:00:00:00:00:02</address>
+            </ethernet-source>
+             <ethernet-destination>
+                <address>00:00:00:00:00:01</address>
+            </ethernet-destination>
+        </ethernet-match>     
+    </match>
+    <id>3</id>
+    <table_id>0</table_id>
+    <instructions>
+        <instruction>
+            <order>0</order>
+            <apply-actions>
+                <action>
+	            <output-action>
+                        <output-node-connector>1</output-node-connector>
+                        <max-length>60</max-length>
+                    </output-action>                	
+                    <order>0</order>
+                </action>
+            </apply-actions>
+        </instruction>
+    </instructions>
+</flow>
