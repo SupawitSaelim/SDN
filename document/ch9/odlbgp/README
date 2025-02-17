@@ -1,0 +1,10 @@
+ตรง  exercise1 - Traditional EBGP
+
+หลังจากติดตั้ง Containernet
+
+สำหรับ Router (knet/urouter:1.4):
+
+sudo docker build -t knet/urouter:1.4 .  (Folder router) 
+sudo docker build -t knet/host-ubuntu:1-2 . (Folder host)
+
+จากนั้นทดสอบสร้าง topo1.py ใน lab 1 -exercise1 Traditional EBGP

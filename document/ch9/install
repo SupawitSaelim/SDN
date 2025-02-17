@@ -1,0 +1,32 @@
+sudo apt-get update
+sudo apt-get install curl -y
+sudo apt-get install default-jdk -y
+sudo apt-get install default-jre -y
+sudo apt-get install openvswitch-switch -y
+sudo apt-get install libxml2-utils
+
+wget https://nexus.opendaylight.org/content/repositories/opendaylight.release/org/opendaylight/integration/opendaylight/15.3.0/opendaylight-15.3.0.tar.gz
+
+tar xvzf opendaylight-15.3.0.tar.gz
+
+cd opendaylight-15.3.0/
+
+./bin/karaf
+
+feature:install odl-mdsal-apidocs
+feature:install odl-restconf
+feature:install odl-openflowplugin-flow-services-rest
+odl-ovsdb-southbound-impl-ui
+
+./bin/karaf clean #ลบ features ด้วย
+
+sudo ovs-vsctl set-manager tcp:127.0.0.1:6640
+sudo ovs-vsctl get-manager
+##############################################
+
+containernet
+
+sudo pip3 install --upgrade urllib3
+sudo pip3 install docker==7.1.0
+cd containernet
+make install
