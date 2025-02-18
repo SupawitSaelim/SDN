@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rpc message-id="102" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <edit-config>
+    <target><running/></target>
+    <config>
+      <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <hostname>CISCOROUTER-SURESH</hostname>
+      </native>
+    </config>
+  </edit-config>
+</rpc>
+]]>]]>

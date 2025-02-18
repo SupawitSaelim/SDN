@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="1">
+  <get-config>
+    <source>
+      <running/>
+    </source>
+    <filter type="subtree">
+      <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
+        <hostname/>
+      </native>
+    </filter>
+  </get-config>
+</rpc>
+]]>]]>

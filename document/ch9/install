@@ -13,10 +13,10 @@ cd opendaylight-15.3.0/
 
 ./bin/karaf
 
-feature:install odl-mdsal-apidocs
-feature:install odl-restconf
-feature:install odl-openflowplugin-flow-services-rest
-odl-ovsdb-southbound-impl-ui
+feature:install odl-mdsal-apidocs odl-restconf odl-openflowplugin-flow-services-rest odl-ovsdb-southbound-impl-ui odl-bgpcep-bgp
+feature:install odl-mdsal-broker
+feature:install odl-openflowplugin-flow-services
+feature:install odl-openflowjava-protocol
 
 ./bin/karaf clean #ลบ features ด้วย
 
@@ -30,3 +30,6 @@ sudo pip3 install --upgrade urllib3
 sudo pip3 install docker==7.1.0
 cd containernet
 make install
+
+เมื่อรัน sudo mn จะเป็น containernet>
+เริ่มทำ Lab BGP ได้เลย
