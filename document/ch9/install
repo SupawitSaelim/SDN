@@ -32,6 +32,7 @@ cd containernet
 make install
 
 เมื่อรัน sudo mn จะเป็น containernet>
+# sudo kill -9 5560
 เริ่มทำ Lab BGP ได้เลย
 
 
