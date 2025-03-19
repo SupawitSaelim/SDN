@@ -33,3 +33,10 @@ make install
 
 เมื่อรัน sudo mn จะเป็น containernet>
 เริ่มทำ Lab BGP ได้เลย
+
+
+
+#### Final ###################################
+ถ้าอาจารย์ให้ opendaylight มา แล้วเปิดไม่ได้
+sudo chown -R test:test ~/opendaylight-15.3.0
+sudo chmod -R u+rwX ~/opendaylight-15.3.0
