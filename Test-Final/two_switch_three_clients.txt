@@ -1,0 +1,51 @@
+sudo ip netns add red
+sudo ip link add red-veth0 type veth peer name red-veth1
+sudo ip link set red-veth1 netns red
+sudo ip netns exec red ip addr add 10.10.20.1/24 dev red-veth1
+sudo ip netns exec red ip link set red-veth1 up
+
+sudo ip netns add blue
+sudo ip link add blue-veth0 type veth peer name blue-veth1
+sudo ip link set blue-veth1 netns blue
+sudo ip netns exec blue ip addr add 10.10.20.2/24 dev blue-veth1
+sudo ip netns exec blue ip link set blue-veth1 up
+
+sudo ip netns add green
+sudo ip link add green-veth0 type veth peer name green-veth1
+sudo ip link set green-veth1 netns green
+sudo ip netns exec green ip addr add 10.10.20.3/24 dev green-veth1
+sudo ip netns exec green ip link set green-veth1 up
+
+sudo ifconfig red-veth0 up
+sudo ifconfig blue-veth0 up
+sudo ifconfig green-veth0 up
+
+sudo ovs-vsctl add-br s1
+sudo ovs-vsctl add-port s1 red-veth0
+sudo ovs-vsctl add-port s1 blue-veth0
+sudo ovs-ofctl -O OpenFlow13 add-flow s1 actions=NORMAL
+
+sudo ovs-vsctl add-br s2
+sudo ovs-vsctl add-port s2 green-veth0
+sudo ovs-ofctl -O OpenFlow13 add-flow s2 actions=NORMAL
+
+sudo ip link add s1-s2-veth0 type veth peer name s1-s2-veth1
+sudo ip link set s1-s2-veth1 up
+sudo ip link set s1-s2-veth0 up
+
+sudo ovs-vsctl add-port s1 s1-s2-veth0
+sudo ovs-vsctl add-port s2 s1-s2-veth1
+
+sudo ifconfig s1 up
+sudo ifconfig s2 up
+
+
+sudo ip netns exec blue ping 10.10.20.3
+
+
+sudo ip netns delete red
+sudo ip netns delete blue
+sudo ovs-vsctl del-br s1
+sudo ovs-vsctl del-br s2
+sudo ip netns delete green
+sudo ip link delete s1-s2-veth1
