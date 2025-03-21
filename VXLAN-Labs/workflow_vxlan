@@ -1,0 +1,195 @@
+# VXLAN (Virtual Extensible LAN) - เทคนิคการทำงานแบบละเอียด
+
+VXLAN (Virtual Extensible LAN) เป็นเทคโนโลยีการทำ network virtualization ที่ออกแบบมาเพื่อแก้ปัญหาข้อจำกัดของ VLAN แบบดั้งเดิม (Traditional VLAN) ที่รองรับได้เพียง 4,096 VLANs (12-bit VLAN ID) โดย VXLAN สามารถรองรับได้ถึง 16 ล้าน VNI (VXLAN Network Identifier) (24-bit VNI)
+
+## หลักการทำงานของ VXLAN
+
+VXLAN ทำงานโดยการ encapsulate Layer 2 Ethernet frames เข้าไปใน UDP packets เพื่อส่งผ่าน IP network (Layer 3) โดยใช้ VXLAN tunnel endpoint (VTEP) เป็นอุปกรณ์ที่ทำหน้าที่ encapsulate และ de-encapsulate packets
+
+### องค์ประกอบหลักของ VXLAN
+
+1. **VNI (VXLAN Network Identifier)**: คล้ายกับ VLAN ID แต่มีขนาด 24 bits (รองรับได้ถึง 16 ล้าน logical networks)
+2. **VTEP (VXLAN Tunnel Endpoint)**: อุปกรณ์ที่ทำหน้าที่ encapsulate และ de-encapsulate VXLAN packets
+3. **Underlay Network**: เครือข่าย IP ที่ใช้ส่ง VXLAN packets ระหว่าง VTEPs
+4. **Overlay Network**: เครือข่าย Layer 2 เสมือนที่สร้างขึ้นโดย VXLAN บน Underlay network
+
+### รูปแบบ VXLAN Packet Format
+
+```
++---------------+---------------+
+| Outer Ethernet| Outer IP      |
+| Header        | Header        |
++---------------+---------------+
+| Outer UDP     | VXLAN         |
+| Header        | Header        |
++---------------+---------------+
+| Original L2   | Original L2   |
+| Ethernet Frame| Payload       |
++---------------+---------------+
+```
+
+- Outer Ethernet Header: MAC address ของ next-hop router ในเครือข่าย underlay
+- Outer IP Header: IP address ของ source VTEP และ destination VTEP
+- Outer UDP Header: Source port (dynamic) และ destination port (มักใช้ 4789)
+- VXLAN Header: ประกอบด้วย flags และ 24-bit VNI
+- Original Ethernet Frame: Frame ดั้งเดิมที่ส่งจาก VM หรืออุปกรณ์ใน overlay network
+
+## กระบวนการทำงานของ VXLAN ในสถาปัตยกรรม Spine-Leaf
+
+สถาปัตยกรรม Spine-Leaf เป็นรูปแบบการออกแบบ Data Center ที่แพร่หลายสำหรับการใช้งาน VXLAN โดยมีโครงสร้างดังนี้:
+
+```
+         +--------+    +--------+
+         | Spine1 |    | Spine2 |
+         +--------+    +--------+
+           /     \      /     \
+          /       \    /       \
++--------+         +--+         +--------+
+| Leaf1  |---------| Leaf2 |---------| Leaf3  |
++--------+         +--------+         +--------+
+   |  |               |  |               |  |
++--+  +--+         +--+  +--+         +--+  +--+
+|Server1|         |Server3|         |Server5|
++-------+         +-------+         +-------+
+|Server2|         |Server4|         |Server6|
++-------+         +-------+         +-------+
+```
+
+## ตัวอย่างการทำงาน: VM ใน VLAN A ที่ Site 1 ping ไปยัง VM ใน VLAN A ที่ Site 2
+
+สมมติว่าเรามีการ setup ดังนี้:
+- Site 1: Leaf1 เป็น VTEP1 (IP: 10.1.1.1)
+- Site 2: Leaf3 เป็น VTEP2 (IP: 10.1.1.3)
+- VM1 ที่ Server1 (Site 1): IP 192.168.10.1, MAC: AA:BB:CC:DD:EE:01, อยู่ใน VLAN A (VNI 10000)
+- VM2 ที่ Server5 (Site 2): IP 192.168.10.2, MAC: AA:BB:CC:DD:EE:02, อยู่ใน VLAN A (VNI 10000)
+
+### ขั้นตอนการทำงานเมื่อ VM1 ping VM2:
+
+1. **การเริ่มต้น ARP Resolution**:
+   - VM1 ต้องการส่ง ICMP ping packet ไปยัง 192.168.10.2 (VM2)
+   - VM1 จะตรวจสอบ ARP table ว่ามี MAC address ของ VM2 หรือไม่
+   - ถ้าไม่มี VM1 จะส่ง ARP Request เพื่อหา MAC ของ 192.168.10.2
+
+2. **ARP Request Processing**:
+   - ARP Request จะส่งแบบ broadcast ภายใน VLAN A ที่ Site 1
+   - Leaf1 (VTEP1) รับ frame และตรวจพบว่าเป็น broadcast frame สำหรับ VNI 10000
+   - Leaf1 จะ encapsulate frame นี้และส่งไปยัง VTEP อื่นๆ ที่มี VNI 10000 (ในกรณีนี้คือ Leaf3)
+
+3. **VXLAN Encapsulation ที่ VTEP1**:
+   - VTEP1 จะสร้าง VXLAN header ที่มี VNI = 10000
+   - จากนั้นจะ encapsulate ด้วย UDP header (src port: random, dst port: 4789)
+   - ต่อด้วย IP header (src IP: 10.1.1.1, dst IP: 10.1.1.3)
+   - และ Ethernet header ที่มี destination MAC เป็น next-hop router บน underlay network
+
+4. **การส่งผ่าน Underlay Network**:
+   - Packet จะถูกส่งผ่าน Spine switches ไปยัง Leaf3 (VTEP2)
+
+5. **VXLAN De-encapsulation ที่ VTEP2**:
+   - Leaf3 รับ packet และตรวจสอบว่าเป็น VXLAN packet (UDP port 4789)
+   - VTEP2 จะ de-encapsulate packet และดู VNI (10000)
+   - จากนั้นส่ง ARP Request ไปยังอุปกรณ์ทุกตัวที่เชื่อมต่อกับ VLAN A (VNI 10000) ที่ Site 2
+
+6. **ARP Response**:
+   - VM2 รับ ARP Request และตอบกลับด้วย ARP Reply ที่มี MAC address ของมันเอง (AA:BB:CC:DD:EE:02)
+   - ARP Reply จะถูกส่งกลับไปยัง VTEP2 (Leaf3)
+
+7. **VXLAN Encapsulation ของ ARP Reply**:
+   - VTEP2 จะ encapsulate ARP Reply และส่งกลับไปยัง VTEP1
+   - ใช้กระบวนการเดียวกับ ARP Request แต่ในทิศทางตรงกันข้าม
+
+8. **VM1 ได้รับ MAC ของ VM2**:
+   - VM1 ได้รับ ARP Reply และบันทึก MAC ของ VM2 ในตาราง ARP
+
+9. **ICMP Echo Request (Ping)**:
+   - VM1 สร้าง ICMP Echo Request และส่งไปยัง VM2 โดยใช้ MAC ที่ได้รับมา
+   - Leaf1 (VTEP1) รับ frame นี้และเห็นว่าเป็น unicast frame สำหรับ MAC ของ VM2
+
+10. **VXLAN Encapsulation ของ ICMP Request**:
+    - VTEP1 จะรู้ว่า MAC ของ VM2 อยู่ที่ VTEP2 (ได้เรียนรู้จากขั้นตอน ARP)
+    - VTEP1 encapsulate ICMP packet และส่งไปยัง VTEP2 ผ่าน VXLAN tunnel
+
+11. **การส่งผ่าน Underlay Network**:
+    - Packet ถูกส่งผ่าน Spine switches ไปยัง Leaf3 (VTEP2)
+
+12. **VXLAN De-encapsulation และส่งต่อไปยัง VM2**:
+    - VTEP2 de-encapsulate packet และส่งต่อไปยัง VM2
+    - VM2 รับ ICMP Echo Request และตอบกลับด้วย ICMP Echo Reply
+
+13. **การส่ง ICMP Echo Reply**:
+    - กระบวนการทำซ้ำเช่นเดียวกับขั้นตอน 10-12 แต่ในทิศทางตรงกันข้าม
+    - VM2 ส่ง ICMP Echo Reply ไปยัง VM1 ผ่านเส้นทางเดียวกัน
+
+## กลไกการเรียนรู้ MAC Address ใน VXLAN
+
+VXLAN สามารถใช้หลายกลไกในการเรียนรู้ MAC-to-VTEP mapping:
+
+1. **Data Plane Learning**: VTEP เรียนรู้ MAC-to-VTEP mapping จาก traffic ที่มาถึง
+   - เมื่อ packet มาถึง VTEP, VTEP จะบันทึก source MAC และ source VTEP IP ลงใน table
+
+2. **Control Plane Learning**: ใช้ protocols เช่น MP-BGP EVPN (Multiprotocol BGP Ethernet VPN) เพื่อแลกเปลี่ยนข้อมูล MAC-to-VTEP mapping
+   - ช่วยลดปริมาณ broadcast/unknown unicast traffic
+   - เพิ่มประสิทธิภาพและความเสถียรของระบบ
+
+## เทคนิคการทำงานของ VXLAN กับ Multicast และ Unicast
+
+VXLAN รองรับหลายโหมดในการส่ง BUM (Broadcast, Unknown unicast, Multicast) traffic:
+
+1. **Multicast-based VXLAN**:
+   - แต่ละ VNI จะเชื่อมโยงกับ multicast group บน underlay network
+   - เมื่อต้องส่ง BUM traffic, VTEP จะส่งไปยัง multicast group ที่เกี่ยวข้อง
+   - ต้องการการ support multicast บน underlay network
+
+2. **Ingress Replication (Unicast)**:
+   - VTEP จะทำสำเนาแพ็กเก็ตและส่งแบบ unicast ไปยังทุก VTEP ที่เกี่ยวข้อง
+   - ไม่ต้องการ multicast บน underlay network แต่อาจเพิ่มภาระให้กับ VTEP ต้นทาง
+
+3. **EVPN-based VXLAN**:
+   - ใช้ MP-BGP EVPN เพื่อแลกเปลี่ยน MAC/IP routing information
+   - ลดความจำเป็นในการใช้ flooding และเพิ่มประสิทธิภาพการทำงาน
+
+## ตัวอย่าง Configuration บน Cisco Nexus (สถาปัตยกรรม Spine-Leaf)
+
+### VTEP Configuration (บน Leaf switches)
+
+```
+feature nv overlay
+feature vn-segment-vlan-based
+feature vxlan
+
+! สร้าง VLAN และกำหนด VNI
+vlan 10
+  name VLAN_A
+  vn-segment 10000
+
+! สร้าง interface NVE (Network Virtualization Edge)
+interface nve1
+  no shutdown
+  source-interface loopback1
+  member vni 10000
+    ingress-replication protocol bgp
+    
+! หรือใช้ multicast แทน ingress-replication
+  member vni 10000
+    mcast-group 239.1.1.1
+    
+! Configuration สำหรับ EVPN
+feature bgp
+router bgp 65001
+  neighbor 10.1.1.100
+    remote-as 65001
+    update-source loopback0
+    address-family l2vpn evpn
+      send-community extended
+```
+
+### การทำ Spine-Leaf VXLAN EVPN Fabric
+
+1. **Spine Switches Configuration**:
+   - ทำหน้าที่เป็น BGP Route Reflector สำหรับ EVPN
+   - ไม่มีส่วนร่วมใน VXLAN encapsulation/decapsulation
+
+2. **Leaf Switches Configuration**:
+   - ทำหน้าที่เป็น VTEP
+   - รับผิดชอบการ encapsulate และ de-encapsulate VXLAN traffic
+
+นี่คือหลักการทำงานและตัวอย่างทางเทคนิคเกี่ยวกับ VXLAN ในสถาปัตยกรรม Spine-Leaf โดยเฉพาะการสื่อสารระหว่าง VLAN ที่อยู่คนละ site ครับ
